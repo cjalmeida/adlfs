@@ -5,7 +5,8 @@ import logging
 
 from azure.datalake.store import AzureDLFileSystem, lib
 from azure.datalake.store.core import AzureDLFile, AzureDLPath
-from azure.storage.blob import BlobBlock, BlobPrefix, BlockBlobService
+from azure.storage.blob import (BlobBlock, BlobPrefix, BlockBlobService,
+                                DeleteSnapshot)
 from azure.storage.common._constants import DEFAULT_PROTOCOL, SERVICE_HOST_BASE
 from fsspec import AbstractFileSystem
 from fsspec.spec import AbstractBufferedFile
@@ -548,6 +549,13 @@ class AzureBlobFileSystem(AbstractFileSystem):
             **kwargs,
         )
 
+    def _rm(self, path):
+        return self.blob_fs.delete_blob(
+            container_name=self.container_name, blob_name=path, delete_snapshots=DeleteSnapshot.Include
+        )
+
+    def rmdir(self, path):
+        return self._rm(path)
 
 class AzureBlobFile(AbstractBufferedFile):
     """ File-like operations on Azure Blobs """
