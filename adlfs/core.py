@@ -416,9 +416,19 @@ class AzureBlobFileSystem(AbstractFileSystem):
                             raise AttributeError(
                                 f"AzureBlobFileSystem.ls() method unable to assign attributes for {blob}!!"
                             )
+                    else:
+                        data["etag"] = blob.properties.etag
+
                     pathlist.append(data)
                 logging.debug(f"Detail is True:  Returning {pathlist}")
                 return pathlist
+
+    def checksum(self, path):
+        etag = self.info(path)["etag"]
+        if etag:
+            return int(tokenize(path, etag), 16)
+        else:
+            return super().checksum(path)
 
     # def info(self, path: str, **kwargs):
     #     """ Create a dictionary of path attributes
